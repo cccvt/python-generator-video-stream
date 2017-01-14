@@ -25,7 +25,8 @@ class Camera(object):
                 yield self.__html_response_from_frame__(self.__encode_frame__(frame))
 
         while True:
-            # Capture frame-by-frame
+            if video_capture is None:
+                yield None
             status, frame = self.video_capture.read()
             if status:
                 yield self.__html_response_from_frame__(self.__encode_frame__(frame))
