@@ -11,6 +11,10 @@ class Camera(object):
     def __encode_frame__(self, frame):
         return cv2.imencode('.jpg', frame)[1].tostring()
 
+    def __html_response_from_frame__(self, encoded_frame):
+        return (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + encoded_frame + b'\r\n')
+
     def open_camera(self):
         self.video_capture = cv2.VideoCapture(0)
 
@@ -18,15 +22,13 @@ class Camera(object):
         if self.video_capture is not None and self.video_capture.isOpened(): # try to get the first frame
             status, frame = self.video_capture.read()
             if status:
-                yield self.__encode_frame__(frame)
-        else:
-            rval = False
+                yield self.__html_response_from_frame__(self.__encode_frame__(frame))
 
         while True:
             # Capture frame-by-frame
             status, frame = self.video_capture.read()
             if status:
-                yield self.__encode_frame__(frame)
+                yield self.__html_response_from_frame__(self.__encode_frame__(frame))
 
         self.close_camera()
         yield None
