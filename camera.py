@@ -28,6 +28,7 @@ class Camera(object):
             if status:
                 yield self.__encode_frame__(frame)
 
+        self.close_camera()
         yield None
 
     def close_camera(self):
