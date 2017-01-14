@@ -1,12 +1,35 @@
-from time import time
-
+import cv2
 
 class Camera(object):
-    """An emulated camera implementation that streams a repeated sequence of
-    files 1.jpg, 2.jpg and 3.jpg at a rate of one frame per second."""
+    """Get one frame from camera."""
+
+    video_capture = None
 
     def __init__(self):
-        self.frames = [open(f + '.jpg', 'rb').read() for f in ['1', '2', '3']]
+        self.open_camera()
+
+    def __encode_frame__(self, frame):
+        return cv2.imencode('.jpg', frame)[1].tostring()
+
+    def open_camera(self):
+        self.video_capture = cv2.VideoCapture(0)
 
     def get_frame(self):
-        return self.frames[int(time()) % 3]
+        if self.video_capture is not None and self.video_capture.isOpened(): # try to get the first frame
+            status, frame = self.video_capture.read()
+            if status:
+                yield self.__encode_frame__(frame)
+        else:
+            rval = False
+
+        while True:
+            # Capture frame-by-frame
+            status, frame = self.video_capture.read()
+            if status:
+                yield self.__encode_frame__(frame)
+
+        yield None
+
+    def close_camera(self):
+        self.video_capture.release()
+        self.video_capture = None
